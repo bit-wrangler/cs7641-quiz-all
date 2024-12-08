@@ -4,6 +4,19 @@
     <button mat-raised-button color="warn" (click)="resetAverages()">Reset Averages</button>
     <button mat-raised-button color="warn" (click)="clearCachedQuestions()">Clear Cached Questions</button>
 
+    <div style="padding-top: 8px;">
+        <button mat-raised-button color="primary" (click)="selectAllAreas()">Select All</button>
+        <button mat-raised-button color="primary" (click)="selectNoAreas()">Deselect All</button>
+        <mat-form-field>
+            <mat-label>Quiz Areas</mat-label>
+            <mat-select [formControl]="selectedAreas" multiple>
+              @for (area of areas; track area) {
+                <mat-option [value]="area">{{area}}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+    </div>
+
     <div>
         <div>Total Questions: {{ questionCount }}</div>
         <div>Viewed: {{ viewedCount }} ({{ viewedRatio * 100 | number:'1.2-2'}}%)</div>

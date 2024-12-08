@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { QuizService } from '../../services/quiz.service';
 import { Question } from '../../models/question.model';
 import { CommonModule } from '@angular/common';
@@ -14,17 +14,30 @@ import { MatButtonModule } from '@angular/material/button';
 })
 export class QuizComponent implements OnInit {
   currentQuestion?: Question;
+  selectedAreas: string[] = [];
   answered: boolean = false;
   userAnswer: boolean | null = null;
 
-  constructor(private quizService: QuizService, private router: Router) { }
+  constructor(private quizService: QuizService, private router: Router, private route: ActivatedRoute) {
+    const navState = this.router.getCurrentNavigation()?.extras.state;
+    if (navState) {
+      const selectedAreas = navState.hasOwnProperty('selectedAreas') ? navState['selectedAreas'] : null;
+      if (selectedAreas) {
+        this.selectedAreas = selectedAreas;
+      }
+    }
+   }
 
   ngOnInit(): void {
+    if (this.selectedAreas.length === 0) {
+      this.selectedAreas = this.quizService.getAreas();
+    }
+
     this.loadNextQuestion();
   }
 
   loadNextQuestion() {
-    const question = this.quizService.getRandomQuestionBoosted(null);
+    const question = this.quizService.getRandomQuestionBoosted(this.selectedAreas, null);
     if (question) {
       this.currentQuestion = question;
       this.answered = false;

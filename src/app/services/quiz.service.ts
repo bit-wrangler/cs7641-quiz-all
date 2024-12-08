@@ -9,12 +9,14 @@ import { Question } from '../models/question.model'
 })
 export class QuizService {
   private questions: Question[] = [];
+  private areas: string[] = [];
   private incorrectQuestions: Question[] = [];
   private incorrectQuestionsTextSet: Set<string> = new Set(); // Keep track of incorrect questions
   private viewedQuestionTextSet: Set<string> = new Set(); // Keep track of viewed questions
   private averages: { [key: string]: number } = {};
   private viewedByArea: { [key: string]: Set<string> } = {};
   private alpha: number = 0.05;
+  private areaIndices: { [key: string]: number[] } = {};
 
   constructor(private http: HttpClient) {
     this.loadMetrics();
@@ -23,31 +25,52 @@ export class QuizService {
 
   loadQuestions() {
     if (this.questions.length > 0) {
+      //determine unique areas
+      const areas = new Set<string>();
+      this.questions.forEach((question, index) => {
+        areas.add(question.area)
+        if (this.areaIndices[question.area] === undefined) {
+          this.areaIndices[question.area] = [];
+        }
+        this.areaIndices[question.area].push(index);
+      });
+      this.areas = Array.from(areas);
       return;
     }
     this.http.get<Question[]>('./assets/questions.json').subscribe(data => {
       this.questions = data;
+      const areas = new Set<string>();
+      this.questions.forEach((question, index) => {
+        areas.add(question.area)
+        if (this.areaIndices[question.area] === undefined) {
+          this.areaIndices[question.area] = [];
+        }
+        this.areaIndices[question.area].push(index);
+      });
+      this.areas = Array.from(areas);
       localStorage.setItem('questions', JSON.stringify(data));
     });
   }
 
-  getRandomQuestion(maxAttempts?: number): Question {
+  getRandomQuestion(selectedAreas: string[], maxAttempts?: number): Question {
     if (maxAttempts === undefined) {
       maxAttempts = 5; // try 5 tiems to get an unviewed question
     }
+    const areaIndices = selectedAreas.map(area => this.areaIndices[area]).flat();
     for (let i = 0; i < maxAttempts; i++) {
-      const randomIndex = Math.floor(Math.random() * this.questions.length);
+      const randomIndex = Math.floor(Math.random() * areaIndices.length);
       const question = this.questions[randomIndex];
       if (!this.viewedQuestionTextSet.has(question.text)) {
         return question;
       }
     }
-    const randomIndex = Math.floor(Math.random() * this.questions.length);
+    const randomIndex = Math.floor(Math.random() * areaIndices.length);
     return this.questions[randomIndex];
   }
 
-  getRandomIncorrectQuestion(): Question {
-    const randomIndex = Math.floor(Math.random() * this.incorrectQuestions.length);
+  getRandomIncorrectQuestion(selectedAreas: string[]): Question {
+    const areaIndices = selectedAreas.map(area => this.areaIndices[area]).flat();
+    const randomIndex = Math.floor(Math.random() * areaIndices.length);
     return this.incorrectQuestions[randomIndex];
   }
 
@@ -56,7 +79,7 @@ export class QuizService {
  * @param incorrectFactor - The factor by which to boost incorrect questions' probability.
  * @returns A randomly selected Question, favoring incorrect ones based on the factor.
  */
-getRandomQuestionBoosted(incorrectFactor: number | null): Question {
+getRandomQuestionBoosted(selectedAreas: string[], incorrectFactor: number | null): Question {
   // Validate the incorrectFactor
   if (incorrectFactor === null) {
     console.warn('incorrectFactor is null. Setting to 1.');
@@ -71,10 +94,10 @@ getRandomQuestionBoosted(incorrectFactor: number | null): Question {
   const randomThreshold = Math.random();
   if (randomThreshold < useAllThreshold || this.incorrectQuestions.length === 0) {
     // Use all questions
-    return this.getRandomQuestion();
+    return this.getRandomQuestion(selectedAreas);
   } else {
     // Use incorrect questions
-    return this.getRandomIncorrectQuestion();
+    return this.getRandomIncorrectQuestion(selectedAreas);
   }
 
   
@@ -122,6 +145,10 @@ getRandomQuestionBoosted(incorrectFactor: number | null): Question {
 
   getIncorrectRatio(): number {
     return this.incorrectQuestions.length / this.questions.length;
+  }
+
+  getAreas(): string[] {
+    return this.areas;
   }
 
   getAverageScores(): { [key: string]: number } {
