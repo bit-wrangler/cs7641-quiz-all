@@ -52,26 +52,32 @@ export class QuizService {
     });
   }
 
+  getRandomIndexForSelectedAreas(selectedAreas: string[]): number {
+    const areaIndices = selectedAreas.map(area => this.areaIndices[area]).flat();
+    const randomIndex = Math.floor(Math.random() * areaIndices.length);
+    return areaIndices[randomIndex];
+  }
+
   getRandomQuestion(selectedAreas: string[], maxAttempts?: number): Question {
     if (maxAttempts === undefined) {
       maxAttempts = 5; // try 5 tiems to get an unviewed question
     }
-    const areaIndices = selectedAreas.map(area => this.areaIndices[area]).flat();
     for (let i = 0; i < maxAttempts; i++) {
-      const randomIndex = Math.floor(Math.random() * areaIndices.length);
+      const randomIndex = this.getRandomIndexForSelectedAreas(selectedAreas);
       const question = this.questions[randomIndex];
       if (!this.viewedQuestionTextSet.has(question.text)) {
         return question;
       }
     }
-    const randomIndex = Math.floor(Math.random() * areaIndices.length);
+    const randomIndex = this.getRandomIndexForSelectedAreas(selectedAreas);
     return this.questions[randomIndex];
   }
 
   getRandomIncorrectQuestion(selectedAreas: string[]): Question {
-    const areaIndices = selectedAreas.map(area => this.areaIndices[area]).flat();
-    const randomIndex = Math.floor(Math.random() * areaIndices.length);
-    return this.incorrectQuestions[randomIndex];
+    const selectedAreasSet = new Set(selectedAreas);
+    const incorrectQuestions = this.incorrectQuestions.filter(q => selectedAreasSet.has(q.area));
+    const randomIndex = Math.floor(Math.random() * incorrectQuestions.length);
+    return incorrectQuestions[randomIndex];
   }
 
   /**
