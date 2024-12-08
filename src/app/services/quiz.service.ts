@@ -25,7 +25,7 @@ export class QuizService {
     if (this.questions.length > 0) {
       return;
     }
-    this.http.get<Question[]>('/assets/questions.json').subscribe(data => {
+    this.http.get<Question[]>('./assets/questions.json').subscribe(data => {
       this.questions = data;
       localStorage.setItem('questions', JSON.stringify(data));
     });
