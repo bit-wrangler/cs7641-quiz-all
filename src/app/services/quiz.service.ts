@@ -92,7 +92,17 @@ getRandomQuestionBoosted(selectedAreas: string[], incorrectFactor: number | null
 
   const useAllThreshold = 1.0 / incorrectFactor;
   const randomThreshold = Math.random();
-  if (randomThreshold < useAllThreshold || this.incorrectQuestions.length === 0) {
+  // check if there are incorrect questions in the selected areas
+  var hasIncorrectQuestions = false;
+  const selectedAreasSet = new Set(selectedAreas);
+  for (const question of this.incorrectQuestions) {
+    if (selectedAreasSet.has(question.area)) {
+      hasIncorrectQuestions = true;
+      break;
+    }
+  }
+
+  if (randomThreshold < useAllThreshold || hasIncorrectQuestions === false) {
     // Use all questions
     return this.getRandomQuestion(selectedAreas);
   } else {
