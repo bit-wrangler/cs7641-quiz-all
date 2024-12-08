@@ -1,0 +1,51 @@
+<div class="quiz-container">
+    <div class="header">
+      <button mat-button color="warn" (click)="stopQuiz()">Stop</button>
+    </div>
+  
+    <div *ngIf="!answered" class="question-mode">
+        <h1>{{ currentQuestion?.area }}</h1>
+      <h2>{{ currentQuestion?.text }}</h2>
+      <div class="buttons">
+        <button mat-raised-button color="primary" (click)="answer(true)">True</button>
+        <button mat-raised-button color="accent" (click)="answer(false)">False</button>
+      </div>
+    </div>
+  
+    <div *ngIf="answered" class="answer-mode">
+      <h1>{{ currentQuestion?.area }}</h1>
+      <h2>{{ currentQuestion?.text }}</h2>
+      <div class="buttons">
+        <button 
+          mat-raised-button
+          [ngClass]="{
+            'correct': userAnswer === true && currentQuestion?.true,
+            'incorrect': userAnswer === true && !currentQuestion?.true
+          }"
+          [disabled]="true">
+          True
+          <span *ngIf="userAnswer === true">
+            <i *ngIf="currentQuestion?.true" class="icon correct-icon">✔️</i>
+            <i *ngIf="!currentQuestion?.true" class="icon incorrect-icon">❌</i>
+          </span>
+        </button>
+        <button 
+          mat-raised-button
+          [ngClass]="{
+            'correct': userAnswer === false && !currentQuestion?.true,
+            'incorrect': userAnswer === false && currentQuestion?.true
+          }"
+          [disabled]="true">
+          False
+          <span *ngIf="userAnswer === false">
+            <i *ngIf="!currentQuestion?.true" class="icon correct-icon">✔️</i>
+            <i *ngIf="currentQuestion?.true" class="icon incorrect-icon">❌</i>
+          </span>
+        </button>
+      </div>
+      <p class="explanation">{{ currentQuestion?.explanation }}</p>
+      <p class="explanation">{{ currentQuestion?.basis_explanation }}</p>
+      <button mat-raised-button color="primary" (click)="nextQuestion()" class="next-button">Next Question</button>
+    </div>
+  </div>
+  
