@@ -11052,7 +11052,7 @@
         "basis_explanation": "The ICA paper Section 3.3 states: 'The fundamental restriction in ICA is that the independent components must be nongaussian for ICA to be possible' and explains why gaussian variables make ICA impossible.",
         "explanation": "The paper explicitly states that ICA cannot work with gaussian variables and provides a mathematical explanation for why the mixing matrix A cannot be estimated in this case.",
         "text": "Independent Component Analysis requires that the independent components be non-gaussian.",
-        "true": true,
+        "true": false,
         "area": "Unsupervised Learning: Feature Selection"
     },
     {
