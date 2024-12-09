@@ -52,21 +52,54 @@ export class QuizService {
     });
   }
 
+  private cachedAreaIndices: number[] | null = null;
+  private cachedAreaIndicesAreas = new Set<string>();
+
+  private getAreaIndices(areas: string[]): number[] {
+    const areasSet = new Set(areas);
+    if (this.cachedAreaIndices !== null && areas.every(area => this.cachedAreaIndicesAreas.has(area))) {
+      return this.cachedAreaIndices;
+    }
+    const areaIndices = areas.map(area => this.areaIndices[area]).flat();
+    this.cachedAreaIndices = areaIndices;
+    this.cachedAreaIndicesAreas = new Set(areas);
+    return areaIndices;
+  }
+
+  private cachedUnviewedAreaIndices: number[] | null = null;
+  private cachedUnviewedAreaIndicesAreas = new Set<string>();
+
+  private getUnviewedAreaIndices(areas: string[]): number[] {
+    const areasSet = new Set(areas);
+    if (this.cachedUnviewedAreaIndices !== null && areas.every(area => this.cachedUnviewedAreaIndicesAreas.has(area))) {
+      return this.cachedUnviewedAreaIndices;
+    }
+    const areaIndices = this.getAreaIndices(areas);
+    const unviewedAreaIndices = areaIndices.filter(index => !this.viewedQuestionTextSet.has(this.questions[index].text));
+    this.cachedUnviewedAreaIndices = unviewedAreaIndices;
+    this.cachedUnviewedAreaIndicesAreas = new Set(areas);
+    return unviewedAreaIndices;
+  }
+
+  private clearUnviewedAreaIndicesCache() {
+    this.cachedUnviewedAreaIndices = null;
+    this.cachedUnviewedAreaIndicesAreas = new Set();
+  }
+
+
   getRandomIndexForSelectedAreas(selectedAreas: string[]): number {
-    const areaIndices = selectedAreas.map(area => this.areaIndices[area]).flat();
+    const areaIndices = this.getAreaIndices(selectedAreas);
     const randomIndex = Math.floor(Math.random() * areaIndices.length);
     return areaIndices[randomIndex];
   }
 
   getRandomQuestion(selectedAreas: string[], maxAttempts?: number): Question {
-    if (maxAttempts === undefined) {
-      maxAttempts = 10; // try 5 tiems to get an unviewed question
-    }
-    for (let i = 0; i < maxAttempts; i++) {
-      const randomIndex = this.getRandomIndexForSelectedAreas(selectedAreas);
-      const question = this.questions[randomIndex];
-      if (!this.viewedQuestionTextSet.has(question.text)) {
-        return question;
+    const useUnviewed = Math.random() < 0.9;
+    if (useUnviewed) {
+      const unviewedAreaIndices = this.getUnviewedAreaIndices(selectedAreas);
+      if (unviewedAreaIndices.length > 0) {
+        const randomIndex = Math.floor(Math.random() * unviewedAreaIndices.length);
+        return this.questions[unviewedAreaIndices[randomIndex]];
       }
     }
     const randomIndex = this.getRandomIndexForSelectedAreas(selectedAreas);
@@ -88,11 +121,11 @@ export class QuizService {
 getRandomQuestionBoosted(selectedAreas: string[], incorrectFactor: number | null): Question {
   // Validate the incorrectFactor
   if (incorrectFactor === null) {
-    console.warn('incorrectFactor is null. Setting to 1.');
+    console.warn('incorrectFactor is null. Setting to 1.5');
     incorrectFactor = 1.5;
   }
   if (incorrectFactor < 1.1) {
-    console.warn('incorrectFactor should be >= 1. Setting to 1.');
+    console.warn('incorrectFactor should be >= 1.1 Setting to 1.1');
     incorrectFactor = 1.1;
   }
 
@@ -135,6 +168,7 @@ getRandomQuestionBoosted(selectedAreas: string[], incorrectFactor: number | null
     this.viewedByArea[area].add(question.text);
 
     this.viewedQuestionTextSet.add(question.text);
+    this.clearUnviewedAreaIndicesCache();
 
     
     if (score < 0.5) {
@@ -153,6 +187,13 @@ getRandomQuestionBoosted(selectedAreas: string[], incorrectFactor: number | null
 
 
     this.saveMetrics();
+  }
+
+  getAreaViewedCount(area: string): number {
+    if (this.viewedByArea[area] === undefined) {
+      return 0;
+    }
+    return this.viewedByArea[area].size;
   }
 
   getViewedRatio(): number {
@@ -193,6 +234,7 @@ getRandomQuestionBoosted(selectedAreas: string[], incorrectFactor: number | null
     this.incorrectQuestions = [];
     this.incorrectQuestionsTextSet = new Set();
     this.viewedQuestionTextSet = new Set();
+    this.clearUnviewedAreaIndicesCache();
     this.saveMetrics();
   }
 
@@ -207,15 +249,6 @@ getRandomQuestionBoosted(selectedAreas: string[], incorrectFactor: number | null
     localStorage.setItem('incorrectQuestions', JSON.stringify(this.incorrectQuestions));
     localStorage.setItem('incorrectQuestionsTextSet', JSON.stringify(Array.from(this.incorrectQuestionsTextSet)));
     localStorage.setItem('viewedQuestionTextSet', JSON.stringify(Array.from(this.viewedQuestionTextSet)));
-  }
-
-  addExtraQuestions(questions: Question[]) {
-    // Add extra questions to the list if they have different text
-    questions.forEach(question => {
-      if (!this.viewedQuestionTextSet.has(question.text)) {
-        this.questions.push(question);
-      }
-    });
   }
 
   clearCachedQuestions() {
@@ -245,6 +278,7 @@ getRandomQuestionBoosted(selectedAreas: string[], incorrectFactor: number | null
     const data5 = localStorage.getItem('viewedQuestionTextSet');
     if (data5) {
       this.viewedQuestionTextSet = new Set(JSON.parse(data5));
+      this.clearUnviewedAreaIndicesCache();
     }
     const data6 = localStorage.getItem('questions');
     if (data6) {

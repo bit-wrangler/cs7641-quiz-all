@@ -17,6 +17,7 @@ export class QuizComponent implements OnInit {
   selectedAreas: string[] = [];
   answered: boolean = false;
   userAnswer: boolean | null = null;
+  areaCount: number = 0;
 
   constructor(private quizService: QuizService, private router: Router, private route: ActivatedRoute) {
     const navState = this.router.getCurrentNavigation()?.extras.state;
@@ -42,6 +43,7 @@ export class QuizComponent implements OnInit {
       this.currentQuestion = question;
       this.answered = false;
       this.userAnswer = null;
+      this.areaCount = this.quizService.getAreaViewedCount(this.currentQuestion.area);
     } else {
       // Handle case when there are no questions
       alert('No questions available.');

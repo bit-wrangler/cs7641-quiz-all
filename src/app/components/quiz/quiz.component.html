@@ -4,7 +4,7 @@
     </div>
   
     <div *ngIf="!answered" class="question-mode">
-        <h1>{{ currentQuestion?.area }}</h1>
+        <h1>{{ currentQuestion?.area }} ({{areaCount}})</h1>
       <h2>{{ currentQuestion?.text }}</h2>
       <div class="buttons">
         <button mat-raised-button color="primary" (click)="answer(true)">True</button>
@@ -13,7 +13,7 @@
     </div>
   
     <div *ngIf="answered" class="answer-mode">
-      <h1>{{ currentQuestion?.area }}</h1>
+      <h1>{{ currentQuestion?.area }} ({{areaCount}})</h1>
       <h2>{{ currentQuestion?.text }}</h2>
       <div class="buttons">
         <button 
