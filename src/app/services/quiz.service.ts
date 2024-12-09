@@ -60,7 +60,7 @@ export class QuizService {
 
   getRandomQuestion(selectedAreas: string[], maxAttempts?: number): Question {
     if (maxAttempts === undefined) {
-      maxAttempts = 5; // try 5 tiems to get an unviewed question
+      maxAttempts = 10; // try 5 tiems to get an unviewed question
     }
     for (let i = 0; i < maxAttempts; i++) {
       const randomIndex = this.getRandomIndexForSelectedAreas(selectedAreas);

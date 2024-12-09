@@ -28,7 +28,7 @@
       <!-- Area Column -->
       <ng-container matColumnDef="area">
         <th mat-header-cell *matHeaderCellDef> Area </th>
-        <td mat-cell *matCellDef="let element"> {{element.key}} </td>
+        <td mat-cell *matCellDef="let element"> <button mat-button (click)="startQuizForArea(element.key)">{{element.key}}</button> </td>
       </ng-container>
   
       <!-- Average Score Column -->

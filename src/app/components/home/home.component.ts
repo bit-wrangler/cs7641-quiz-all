@@ -63,6 +63,10 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/quiz'], { state: { selectedAreas } });
   }
 
+  startQuizForArea(area: string) {
+    this.router.navigate(['/quiz'], { state: { selectedAreas: [area] } });
+  }
+
   resetAverages() {
     this.quizService.resetAverages();
     this.averageScores = this.quizService.getAverageScores();
