@@ -45,7 +45,7 @@ export class QuizComponent implements OnInit {
     const promptTemplate = `In the context of ${area}, briefly explain why the following is true or not:\n${statement}`;
     const formattedPrompt = encodeURIComponent(promptTemplate); // Ensures proper URL encoding
 
-    const fullUrl = `${baseUrl}?model=${model}&q=${formattedPrompt}`;
+    const fullUrl = `${baseUrl}?model=${model}&temporary-chat=true&q=${formattedPrompt}`;
     return fullUrl;
 }
 
