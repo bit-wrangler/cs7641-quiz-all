@@ -37,6 +37,25 @@ export class QuizComponent implements OnInit {
     this.loadNextQuestion();
   }
 
+  // https://chat.openai.com/?q=this+is+a+test+of+the+url+query+functionality+in+chatgpt
+  // https://chatgpt.com/?model=gpt-4o&q=This+is+a+test+of+the+URL+query+functionality+in+ChatGPT.
+
+  generateChatGPTUrl(area: string, statement:string, model = "gpt-4o") {
+    const baseUrl = "https://chatgpt.com/";
+    const promptTemplate = `In the context of ${area}, briefly explain why the following is true or not:\n${statement}`;
+    const formattedPrompt = encodeURIComponent(promptTemplate); // Ensures proper URL encoding
+
+    const fullUrl = `${baseUrl}?model=${model}&q=${formattedPrompt}`;
+    return fullUrl;
+}
+
+  askGPT() {
+    const area = this.currentQuestion!.area;
+    const statement = this.currentQuestion!.text;
+    const url = this.generateChatGPTUrl(area, statement);
+    window.open(url, '_blank');
+  }
+
   loadNextQuestion() {
     const question = this.quizService.getRandomQuestionBoosted(this.selectedAreas, null);
     if (question) {
