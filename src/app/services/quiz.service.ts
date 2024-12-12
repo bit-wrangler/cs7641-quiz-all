@@ -179,7 +179,7 @@ getRandomQuestionBoosted(selectedAreas: string[], incorrectFactor: number | null
       }
     } else {
       // 10% chance of removing from incorrect questions, if it's there
-      if (this.incorrectQuestionsTextSet.has(question.text) && Math.random() < 0.1) {
+      if (this.incorrectQuestionsTextSet.has(question.text) && Math.random() < 0.25) {
         this.incorrectQuestions = this.incorrectQuestions.filter(q => q.text !== question.text);
         this.incorrectQuestionsTextSet.delete(question.text);
       }
